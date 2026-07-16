@@ -37,6 +37,81 @@
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
 
+        .settings-panel {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid #00ff00;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            width: 800px;
+            color: #fff;
+        }
+
+        .settings-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .setting-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .setting-label {
+            color: #00ff00;
+            font-weight: bold;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+
+        .speed-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .speed-btn {
+            padding: 8px 16px;
+            border: 2px solid #00ff00;
+            background: #000;
+            color: #00ff00;
+            cursor: pointer;
+            border-radius: 3px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .speed-btn:hover {
+            background: #00ff00;
+            color: #000;
+        }
+
+        .speed-btn.active {
+            background: #00ff00;
+            color: #000;
+        }
+
+        .start-btn {
+            padding: 10px 20px;
+            background: #ff00ff;
+            color: #fff;
+            border: 2px solid #ff00ff;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .start-btn:hover {
+            background: #cc00cc;
+            border-color: #cc00cc;
+        }
+
         .scoreboard {
             display: flex;
             justify-content: space-around;
@@ -147,38 +222,77 @@
             background: #00cc00;
             transform: scale(1.05);
         }
+
+        .hidden {
+            display: none;
+        }
+
+        .game-info {
+            color: #00ff00;
+            font-size: 14px;
+            margin-top: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
     </style>
 </head>
 <body>
     <div class="game-container">
         <h1>🎮 PONG GAME 🎮</h1>
         <div class="mode-indicator">👥 2 Player Mode</div>
-        <div class="scoreboard">
-            <div class="score">
-                <div class="score-label">Player 1</div>
-                <div class="score-value" id="player1Score">0</div>
-            </div>
-            <div class="score">
-                <div class="score-label">Player 2</div>
-                <div class="score-value" id="player2Score">0</div>
+
+        <!-- Settings Panel -->
+        <div id="settingsPanel" class="settings-panel">
+            <div class="settings-row">
+                <div class="setting-group">
+                    <span class="setting-label">Ball Speed:</span>
+                    <div class="speed-buttons">
+                        <button class="speed-btn" onclick="setSpeed(3)">Slow</button>
+                        <button class="speed-btn active" onclick="setSpeed(5)">Normal</button>
+                        <button class="speed-btn" onclick="setSpeed(7)">Fast</button>
+                        <button class="speed-btn" onclick="setSpeed(9)">Crazy</button>
+                    </div>
+                </div>
+                <button class="start-btn" onclick="startGame()">Start Game</button>
             </div>
         </div>
-        <canvas id="gameCanvas" width="800" height="400"></canvas>
-        <div class="controls">
-            <div class="controls-row">
-                <div class="player-controls">
-                    <div class="player-label">🎮 Player 1 (Left Paddle)</div>
-                    <p><strong>W</strong> - Move Up</p>
-                    <p><strong>S</strong> - Move Down</p>
+
+        <!-- Game Info -->
+        <div class="game-info" id="gameInfo">
+            Ball Speed: <span id="speedDisplay">Normal (5)</span>
+        </div>
+
+        <!-- Scoreboard -->
+        <div id="scoreboardContainer" class="hidden">
+            <div class="scoreboard">
+                <div class="score">
+                    <div class="score-label">Player 1</div>
+                    <div class="score-value" id="player1Score">0</div>
                 </div>
-                <div style="border-left: 2px solid #00ff00;"></div>
-                <div class="player-controls">
-                    <div class="player-label">🎮 Player 2 (Right Paddle)</div>
-                    <p><strong>⬆️ Arrow Up</strong> - Move Up</p>
-                    <p><strong>⬇️ Arrow Down</strong> - Move Down</p>
+                <div class="score">
+                    <div class="score-label">Player 2</div>
+                    <div class="score-value" id="player2Score">0</div>
                 </div>
             </div>
-            <p style="margin-top: 15px;">First to 11 points wins!</p>
+            <canvas id="gameCanvas" width="800" height="400"></canvas>
+            <div class="controls">
+                <div class="controls-row">
+                    <div class="player-controls">
+                        <div class="player-label">🎮 Player 1 (Left Paddle)</div>
+                        <p><strong>W</strong> - Move Up</p>
+                        <p><strong>S</strong> - Move Down</p>
+                    </div>
+                    <div style="border-left: 2px solid #00ff00;"></div>
+                    <div class="player-controls">
+                        <div class="player-label">🎮 Player 2 (Right Paddle)</div>
+                        <p><strong>⬆️ Arrow Up</strong> - Move Up</p>
+                        <p><strong>⬇️ Arrow Down</strong> - Move Down</p>
+                    </div>
+                </div>
+                <p style="margin-top: 15px;">First to 11 points wins!</p>
+                <p style="margin-top: 10px;">
+                    <button class="start-btn" onclick="location.reload()" style="margin-top: 10px;">Back to Menu</button>
+                </p>
+            </div>
         </div>
     </div>
 
@@ -189,6 +303,9 @@
     </div>
 
     <script>
+        let ballSpeed = 5;
+        let gameStarted = false;
+
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
@@ -230,7 +347,7 @@
         };
 
         const winningScore = 11;
-        let gameActive = true;
+        let gameActive = false;
 
         // Input handling
         const keys = {};
@@ -245,6 +362,35 @@
         document.addEventListener('keyup', (e) => {
             keys[e.key.toLowerCase()] = false;
         });
+
+        function setSpeed(speed) {
+            ballSpeed = speed;
+            // Update button styles
+            document.querySelectorAll('.speed-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update display
+            let speedName = '';
+            switch(speed) {
+                case 3: speedName = 'Slow (3)'; break;
+                case 5: speedName = 'Normal (5)'; break;
+                case 7: speedName = 'Fast (7)'; break;
+                case 9: speedName = 'Crazy (9)'; break;
+            }
+            document.getElementById('speedDisplay').textContent = speedName;
+        }
+
+        function startGame() {
+            gameStarted = true;
+            gameActive = true;
+            document.getElementById('settingsPanel').classList.add('hidden');
+            document.getElementById('scoreboardContainer').classList.remove('hidden');
+            document.getElementById('gameInfo').classList.add('hidden');
+            resetBall();
+            gameLoop();
+        }
 
         // Update player 1 paddle position (W/S keys)
         function updatePlayer1Paddle() {
@@ -343,6 +489,7 @@
         function resetBall() {
             ball.x = canvas.width / 2;
             ball.y = canvas.height / 2;
+            ball.speed = ballSpeed;
             ball.dx = (Math.random() > 0.5 ? 1 : -1) * ball.speed;
             ball.dy = (Math.random() - 0.5) * ball.speed;
         }
@@ -419,12 +566,11 @@
                 updatePlayer2Paddle();
                 updateBall();
             }
-            draw();
-            requestAnimationFrame(gameLoop);
+            if (gameStarted) {
+                draw();
+                requestAnimationFrame(gameLoop);
+            }
         }
-
-        // Start the game
-        gameLoop();
     </script>
 </body>
 </html>
