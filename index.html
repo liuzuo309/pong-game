@@ -263,7 +263,7 @@
 
         <!-- Game Info -->
         <div class="game-info" id="gameInfo">
-            Ball Speed: <span id="speedDisplay">Normal (5)</span>
+            Ball Speed: <span id="speedDisplay">Normal (5)</span> | Paddle Speed: <span id="paddleSpeedDisplay">6</span>
         </div>
 
         <!-- Scoreboard -->
@@ -309,6 +309,7 @@
 
     <script>
         let ballSpeed = 5;
+        let paddleSpeed = 6;
         let gameStarted = false;
 
         const canvas = document.getElementById('gameCanvas');
@@ -370,6 +371,11 @@
 
         function setSpeed(speed) {
             ballSpeed = speed;
+            
+            // Calculate paddle speed based on ball speed
+            // Base paddle speed is 6, scale with ball speed
+            paddleSpeed = 6 + (speed - 5) * 0.8;
+            
             // Update button styles
             document.querySelectorAll('.speed-btn').forEach(btn => {
                 btn.classList.remove('active');
@@ -387,6 +393,7 @@
                 case 13: speedName = 'Ultra (13)'; break;
             }
             document.getElementById('speedDisplay').textContent = speedName;
+            document.getElementById('paddleSpeedDisplay').textContent = paddleSpeed.toFixed(1);
         }
 
         function startGame() {
@@ -395,6 +402,11 @@
             document.getElementById('settingsPanel').classList.add('hidden');
             document.getElementById('scoreboardContainer').classList.remove('hidden');
             document.getElementById('gameInfo').classList.add('hidden');
+            
+            // Set paddle speeds based on ball speed
+            player1Paddle.speed = paddleSpeed;
+            player2Paddle.speed = paddleSpeed;
+            
             resetBall();
             gameLoop();
         }
