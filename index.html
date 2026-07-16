@@ -71,10 +71,12 @@
         .speed-buttons {
             display: flex;
             gap: 5px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         .speed-btn {
-            padding: 8px 16px;
+            padding: 8px 14px;
             border: 2px solid #00ff00;
             background: #000;
             color: #00ff00;
@@ -82,6 +84,7 @@
             border-radius: 3px;
             font-weight: bold;
             transition: all 0.3s ease;
+            font-size: 12px;
         }
 
         .speed-btn:hover {
@@ -250,6 +253,8 @@
                         <button class="speed-btn active" onclick="setSpeed(5)">Normal</button>
                         <button class="speed-btn" onclick="setSpeed(7)">Fast</button>
                         <button class="speed-btn" onclick="setSpeed(9)">Crazy</button>
+                        <button class="speed-btn" onclick="setSpeed(11)">Extreme</button>
+                        <button class="speed-btn" onclick="setSpeed(13)">Ultra</button>
                     </div>
                 </div>
                 <button class="start-btn" onclick="startGame()">Start Game</button>
@@ -378,6 +383,8 @@
                 case 5: speedName = 'Normal (5)'; break;
                 case 7: speedName = 'Fast (7)'; break;
                 case 9: speedName = 'Crazy (9)'; break;
+                case 11: speedName = 'Extreme (11)'; break;
+                case 13: speedName = 'Ultra (13)'; break;
             }
             document.getElementById('speedDisplay').textContent = speedName;
         }
