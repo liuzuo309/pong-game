@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pong Game</title>
+    <title>Pong Game - 2 Player</title>
     <style>
         * {
             margin: 0;
@@ -26,7 +26,14 @@
 
         h1 {
             color: #fff;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .mode-indicator {
+            color: #00ff00;
+            font-size: 16px;
+            margin-bottom: 15px;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
 
@@ -71,8 +78,30 @@
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
 
+        .controls-row {
+            display: flex;
+            justify-content: space-around;
+            width: 800px;
+            margin: 10px 0;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+        }
+
         .controls p {
             margin: 5px 0;
+        }
+
+        .player-controls {
+            flex: 1;
+            padding: 0 20px;
+        }
+
+        .player-label {
+            font-weight: bold;
+            color: #ff00ff;
+            margin-bottom: 10px;
+            font-size: 16px;
         }
 
         .game-over {
@@ -123,22 +152,33 @@
 <body>
     <div class="game-container">
         <h1>🎮 PONG GAME 🎮</h1>
+        <div class="mode-indicator">👥 2 Player Mode</div>
         <div class="scoreboard">
             <div class="score">
-                <div class="score-label">Player</div>
-                <div class="score-value" id="playerScore">0</div>
+                <div class="score-label">Player 1</div>
+                <div class="score-value" id="player1Score">0</div>
             </div>
             <div class="score">
-                <div class="score-label">Computer</div>
-                <div class="score-value" id="computerScore">0</div>
+                <div class="score-label">Player 2</div>
+                <div class="score-value" id="player2Score">0</div>
             </div>
         </div>
         <canvas id="gameCanvas" width="800" height="400"></canvas>
         <div class="controls">
-            <p><strong>Player Controls:</strong></p>
-            <p>🖱️ Mouse Movement - Move paddle up/down</p>
-            <p>⬆️ ⬇️ Arrow Keys - Move paddle up/down</p>
-            <p>First to 11 points wins!</p>
+            <div class="controls-row">
+                <div class="player-controls">
+                    <div class="player-label">🎮 Player 1 (Left Paddle)</div>
+                    <p><strong>W</strong> - Move Up</p>
+                    <p><strong>S</strong> - Move Down</p>
+                </div>
+                <div style="border-left: 2px solid #00ff00;"></div>
+                <div class="player-controls">
+                    <div class="player-label">🎮 Player 2 (Right Paddle)</div>
+                    <p><strong>⬆️ Arrow Up</strong> - Move Up</p>
+                    <p><strong>⬇️ Arrow Down</strong> - Move Down</p>
+                </div>
+            </div>
+            <p style="margin-top: 15px;">First to 11 points wins!</p>
         </div>
     </div>
 
@@ -157,7 +197,7 @@
         const paddleHeight = 80;
         const ballSize = 8;
 
-        let playerPaddle = {
+        let player1Paddle = {
             x: 20,
             y: canvas.height / 2 - paddleHeight / 2,
             width: paddleWidth,
@@ -166,13 +206,13 @@
             speed: 6
         };
 
-        let computerPaddle = {
+        let player2Paddle = {
             x: canvas.width - 30,
             y: canvas.height / 2 - paddleHeight / 2,
             width: paddleWidth,
             height: paddleHeight,
             dy: 0,
-            speed: 5
+            speed: 6
         };
 
         let ball = {
@@ -185,8 +225,8 @@
         };
 
         let score = {
-            player: 0,
-            computer: 0
+            player1: 0,
+            player2: 0
         };
 
         const winningScore = 11;
@@ -194,66 +234,51 @@
 
         // Input handling
         const keys = {};
-        let mouseY = canvas.height / 2;
 
         document.addEventListener('keydown', (e) => {
-            keys[e.key] = true;
-            if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+            keys[e.key.toLowerCase()] = true;
+            if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key.toLowerCase() === 'w' || e.key.toLowerCase() === 's') {
                 e.preventDefault();
             }
         });
 
         document.addEventListener('keyup', (e) => {
-            keys[e.key] = false;
+            keys[e.key.toLowerCase()] = false;
         });
 
-        canvas.addEventListener('mousemove', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            mouseY = e.clientY - rect.top;
-        });
-
-        // Update player paddle position
-        function updatePlayerPaddle() {
-            // Mouse control
-            let targetY = mouseY - playerPaddle.height / 2;
-
-            // Arrow keys control (can combine with mouse)
-            if (keys['ArrowUp']) {
-                targetY = playerPaddle.y - playerPaddle.speed;
+        // Update player 1 paddle position (W/S keys)
+        function updatePlayer1Paddle() {
+            if (keys['w']) {
+                player1Paddle.y -= player1Paddle.speed;
             }
-            if (keys['ArrowDown']) {
-                targetY = playerPaddle.y + playerPaddle.speed;
+            if (keys['s']) {
+                player1Paddle.y += player1Paddle.speed;
             }
-
-            playerPaddle.y = targetY;
 
             // Boundary collision
-            if (playerPaddle.y < 0) {
-                playerPaddle.y = 0;
+            if (player1Paddle.y < 0) {
+                player1Paddle.y = 0;
             }
-            if (playerPaddle.y + playerPaddle.height > canvas.height) {
-                playerPaddle.y = canvas.height - playerPaddle.height;
+            if (player1Paddle.y + player1Paddle.height > canvas.height) {
+                player1Paddle.y = canvas.height - player1Paddle.height;
             }
         }
 
-        // Update computer paddle position (AI)
-        function updateComputerPaddle() {
-            const computerCenter = computerPaddle.y + computerPaddle.height / 2;
-            const ballCenterY = ball.y;
-
-            // AI follows the ball with slight imperfection
-            if (computerCenter < ballCenterY - 35) {
-                computerPaddle.y += computerPaddle.speed;
-            } else if (computerCenter > ballCenterY + 35) {
-                computerPaddle.y -= computerPaddle.speed;
+        // Update player 2 paddle position (Arrow keys)
+        function updatePlayer2Paddle() {
+            if (keys['arrowup']) {
+                player2Paddle.y -= player2Paddle.speed;
+            }
+            if (keys['arrowdown']) {
+                player2Paddle.y += player2Paddle.speed;
             }
 
             // Boundary collision
-            if (computerPaddle.y < 0) {
-                computerPaddle.y = 0;
+            if (player2Paddle.y < 0) {
+                player2Paddle.y = 0;
             }
-            if (computerPaddle.y + computerPaddle.height > canvas.height) {
-                computerPaddle.y = canvas.height - computerPaddle.height;
+            if (player2Paddle.y + player2Paddle.height > canvas.height) {
+                player2Paddle.y = canvas.height - player2Paddle.height;
             }
         }
 
@@ -273,33 +298,33 @@
             }
 
             // Paddle collision detection
-            if (checkPaddleCollision(playerPaddle)) {
+            if (checkPaddleCollision(player1Paddle)) {
                 ball.dx = Math.abs(ball.dx);
-                ball.x = playerPaddle.x + playerPaddle.width + ball.radius;
+                ball.x = player1Paddle.x + player1Paddle.width + ball.radius;
                 // Add spin based on where the ball hits the paddle
-                const deltaY = (ball.y - (playerPaddle.y + playerPaddle.height / 2)) / (playerPaddle.height / 2);
+                const deltaY = (ball.y - (player1Paddle.y + player1Paddle.height / 2)) / (player1Paddle.height / 2);
                 ball.dy += deltaY * 3;
             }
 
-            if (checkPaddleCollision(computerPaddle)) {
+            if (checkPaddleCollision(player2Paddle)) {
                 ball.dx = -Math.abs(ball.dx);
-                ball.x = computerPaddle.x - ball.radius;
-                const deltaY = (ball.y - (computerPaddle.y + computerPaddle.height / 2)) / (computerPaddle.height / 2);
+                ball.x = player2Paddle.x - ball.radius;
+                const deltaY = (ball.y - (player2Paddle.y + player2Paddle.height / 2)) / (player2Paddle.height / 2);
                 ball.dy += deltaY * 3;
             }
 
             // Left and right wall collision (score)
             if (ball.x - ball.radius < 0) {
-                score.computer++;
+                score.player2++;
                 resetBall();
             }
             if (ball.x + ball.radius > canvas.width) {
-                score.player++;
+                score.player1++;
                 resetBall();
             }
 
             // Check for winning condition
-            if (score.player >= winningScore || score.computer >= winningScore) {
+            if (score.player1 >= winningScore || score.player2 >= winningScore) {
                 endGame();
             }
         }
@@ -361,13 +386,13 @@
 
             // Draw game elements
             drawNetLine();
-            drawPaddle(playerPaddle);
-            drawPaddle(computerPaddle);
+            drawPaddle(player1Paddle);
+            drawPaddle(player2Paddle);
             drawBall();
 
             // Update score display
-            document.getElementById('playerScore').textContent = score.player;
-            document.getElementById('computerScore').textContent = score.computer;
+            document.getElementById('player1Score').textContent = score.player1;
+            document.getElementById('player2Score').textContent = score.player2;
         }
 
         function endGame() {
@@ -376,12 +401,12 @@
             const gameOverMessage = document.getElementById('gameOverMessage');
             const finalScore = document.getElementById('finalScore');
 
-            if (score.player >= winningScore) {
-                gameOverMessage.textContent = '🎉 YOU WIN! 🎉';
-                finalScore.textContent = `Final Score: ${score.player} - ${score.computer}`;
+            if (score.player1 >= winningScore) {
+                gameOverMessage.textContent = '🎉 PLAYER 1 WINS! 🎉';
+                finalScore.textContent = `Final Score: ${score.player1} - ${score.player2}`;
             } else {
-                gameOverMessage.textContent = '💻 COMPUTER WINS! 💻';
-                finalScore.textContent = `Final Score: ${score.player} - ${score.computer}`;
+                gameOverMessage.textContent = '🎉 PLAYER 2 WINS! 🎉';
+                finalScore.textContent = `Final Score: ${score.player1} - ${score.player2}`;
             }
 
             gameOverScreen.style.display = 'block';
@@ -390,8 +415,8 @@
         // Game loop
         function gameLoop() {
             if (gameActive) {
-                updatePlayerPaddle();
-                updateComputerPaddle();
+                updatePlayer1Paddle();
+                updatePlayer2Paddle();
                 updateBall();
             }
             draw();
